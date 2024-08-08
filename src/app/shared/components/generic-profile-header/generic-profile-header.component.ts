@@ -1,12 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { LocalStorageService, ToastService, UtilService } from 'src/app/core/services';
 import { ProfileService } from 'src/app/core/services/profile/profile.service';
 import { CommonRoutes } from 'src/global.routes';
 import { Clipboard } from '@capacitor/clipboard';
 import { localKeys } from 'src/app/core/constants/localStorage.keys';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-generic-profile-header',
@@ -21,14 +21,14 @@ export class GenericProfileHeaderComponent implements OnInit {
   labels = ["CHECK_OUT_MENTOR","PROFILE_ON_MENTORED_EXPLORE_THE_SESSIONS"];
 
   public isMobile:any;
-  user: any;
+  roles: any;
 
   constructor(private router:Router,private localStorage:LocalStorageService, private profileService: ProfileService, private utilService:UtilService,private toast: ToastService, private translateService: TranslateService,) {
     this.isMobile = utilService.isMobile()
    }
 
   async ngOnInit() {
-    this.user = await this.localStorage.getLocalData(localKeys.USER_DETAILS)
+    this.roles = this.headerData.user_roles;
   }
 
   async action(event) {
@@ -38,7 +38,7 @@ export class GenericProfileHeaderComponent implements OnInit {
         break;
       
       case 'role':
-        if(this.user?.about != null){
+        if(this.headerData?.about != null || window['env']['isAuthBypassed']){
           this.router.navigate([`/${CommonRoutes.MENTOR_QUESTIONNAIRE}`]);   
         } else{
           this.profileService.upDateProfilePopup()
@@ -80,5 +80,10 @@ export class GenericProfileHeaderComponent implements OnInit {
       this.toast.showToast('COPIED',"success");
     });
   };
+
+  async viewRoles(){
+    const titlesArray = this.roles.map(item => item.title);
+    this.profileService.viewRolesModal(titlesArray);
+  }
 
 }

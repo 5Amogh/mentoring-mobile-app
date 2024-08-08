@@ -14,6 +14,7 @@ import { MenteeListPopupComponent } from 'src/app/shared/components/mentee-list-
 import { EventListenerFocusTrapInertStrategy } from '@angular/cdk/a11y';
 import { PermissionService } from 'src/app/core/services/permission/permission.service';
 import { FormService } from 'src/app/core/services/form/form.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-session-detail',
@@ -41,6 +42,12 @@ export class SessionDetailPage implements OnInit {
   sessionManagerText="";
  activeUrl:any;
  isNotInvited: any;
+ defaultUiForm = [
+  {
+    title: "MEETING_PLATFORM",
+    key: "meeting_info",
+  }
+ ];
 
   constructor(private localStorage: LocalStorageService, private router: Router,
     private activatedRoute: ActivatedRoute, private sessionService: SessionService,
@@ -57,6 +64,7 @@ export class SessionDetailPage implements OnInit {
   }
 
   async ionViewWillEnter() {
+    this.detailData.form = JSON.parse(JSON.stringify(this.defaultUiForm));
     await this.user.getUserValue();
     this.userDetails = await this.localStorage.getLocalData(localKeys.USER_DETAILS);
     this.fetchSessionDetails();
@@ -69,10 +77,7 @@ export class SessionDetailPage implements OnInit {
   };
   detailData = {
     form: [
-      {
-        title: "MEETING_PLATFORM",
-        key: "meeting_info",
-      },
+      
     ],
     data: {
       id:'',
@@ -297,7 +302,7 @@ export class SessionDetailPage implements OnInit {
 
   async onEnroll() {
     if (this.userDetails) {
-      if (this.userDetails?.about) {
+      if (this.userDetails?.about || window['env']['isAuthBypassed']) {
         let result = await this.sessionService.enrollSession(this.id);
         if (result?.result) {
           this.toast.showToast(result?.message, "success");
@@ -357,7 +362,7 @@ export class SessionDetailPage implements OnInit {
      
     let modal = await this.modalCtrl.create({
       component: MenteeListPopupComponent, 
-      cssClass: 'search-popover-config',
+      cssClass: 'large-width-popover-config',
       componentProps: { id:this.id }
     });
 
